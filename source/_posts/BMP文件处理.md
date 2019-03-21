@@ -1,12 +1,12 @@
 ---
-title: BMP文件处理
+title: Exercise1--BMP文件处理
 date: 2019-03-20 20:37:15
 tags:
 - 图像处理
 mathjax: true
 ---
 
-{% asset_img 1.bmp %}
+{% asset_img 1.jpg%}
 
 
 <!-- more -->
