@@ -11,8 +11,15 @@ tags:
 
 封装的东西大致分为两类，图片的加载与输出以及直方图的建立与输出。
 
+于是我将所有的操作都置于`namespace ImageUtil `下
+
 ## 基本类型
 ```cpp
+//色彩
+typedef struct ImageColor{
+	BYTE r, g, b, a;
+}RGBA;
+
 //图片的信息
 typedef struct ImageData
 {
@@ -22,6 +29,10 @@ typedef struct ImageData
 	BYTE * pImg;
 	int length;
 	int width, height;
+    
+    ImageData& operator+(ImageData& d0);
+	ImageData& operator*(float k);
+
 }IMGDATA;
 
 //直方图的信息
@@ -76,7 +87,8 @@ ImageData ImageUtil::loadImage(const std::string& path)
 			imgWithoutError[i * (infoHeader.biWidth * infoHeader.biBitCount / 8) + j] = img[++point];
 		}
 
-		while (point % 4 != 0)
+		//索引值与真实值的区别
+		while ((point + 1) % 4 != 0)
 			point++;
 	}
 
@@ -100,28 +112,29 @@ void ImageUtil::outputImage(ImageData data, const int clrUsed, const std::string
 	if (!out.is_open())
 		return;	
 
-	BYTE *img = new BYTE[data.length];
+	BYTE *img = new BYTE[data.infoHeader.biSizeImage];
 	int byteWidth = (infoHeader.biWidth * infoHeader.biBitCount / 8);
 	int point = -1;
 	for(int i = 0;i < data.height;i++)
 	{
 		for(int j = 0;j < byteWidth;j++)
 		{
-			img[++point] = data.pImg[i * data.width + j];
+			img[++point] = data.pImg[i * byteWidth + j];
 		}
-
-		while (point % 4 != 0)
+		
+        	//点在数组当中的索引值与宽度正好相差1
+		while ((point + 1) % 4 != 0)
 			img[++point] = 0;
 	}
-
+    
 	std::cout << "output " << path << "...." << std::endl;
 	out.write(reinterpret_cast<char *>(&data.fileHeader), sizeof(BITMAPFILEHEADER));
 	out.write(reinterpret_cast<char *>(&data.infoHeader), sizeof(BITMAPINFOHEADER));
 	out.write(reinterpret_cast<char *>(&data.rgbquad), clrUsed * sizeof(RGBQUAD));
-	out.write(reinterpret_cast<char *>(img), data.length);
+	out.write(reinterpret_cast<char *>(img), data.infoHeader.biSizeImage);
 	out.close();
 
-	
+	delete[] img;
 }
 
 //得到图片的直方图信息
@@ -169,6 +182,10 @@ void ImageUtil::outputHistogram(const IMGDATA data, const std::string& path)
 	// newData.infoHeader.biYPelsPerMeter = data.infoHeader.biYPelsPerMeter;
 
 	newData.pImg = new BYTE[256 * 256];
+	for(int i = 0;i < 256 * 256;i++)
+	{
+		newData.pImg[i] = 0;
+	}
 
 	histogram.normalize();
 
@@ -207,3 +224,166 @@ void ImageUtil::outputHistogram(const IMGDATA data, const std::string& path)
 ```
 
 由于和之前[Exercise1](/2019/03/20/BMP文件处理/)与[Exercise2](/2019/03/21/直方图处理/)的操作是一样的，因此也就不再赘述了。
+
+## 转灰度图操作
+
+而由于大部分的图片处理都是基于灰度图的，因此这里也封装了将24/32位图片输入然后直接输出8位图的操作，以便于之后的练习（这样可以直接输入24/32位图，而不是先使用[Exercise1](/2019/03/20/BMP文件处理/)的代码操作改为8位图再使用）
+
+```cpp
+ImageUtil::ImageData ImageUtil::loadImageToGray(const std::string & path)
+{
+	ImageData data = loadImage(path);
+	if (data.infoHeader.biBitCount != 8)
+	{
+		RGBA *rgba = new RGBA[data.width * data.height];
+		switch (static_cast<int>(data.infoHeader.biBitCount))
+		{
+		case 16:
+			std::cout << "无法转换16位图(太麻烦，懒癌发作)" << std::endl;
+			break;
+		case 24:
+		{
+			int point = 0;
+			for (int i = 0; i < data.height; i++)
+			{
+				for (int j = 0; j < data.width; j++)
+				{
+					rgba[i * data.width + j].b = data.pImg[point++];
+					rgba[i * data.width + j].g = data.pImg[point++];
+					rgba[i * data.width + j].r = data.pImg[point++];
+				}
+			}
+			data.infoHeader.biBitCount = 8;
+			data.infoHeader.biClrUsed = 256;
+
+			data.fileHeader.bfOffBits = 54 + 4 * 256;
+			int byteLine = (data.width * data.infoHeader.biBitCount / 8 + 3) / 4 * 4;
+			data.infoHeader.biSizeImage = byteLine * data.height;
+			data.fileHeader.bfSize = 54 + byteLine * data.height + 4 * 256;
+
+			for (int i = 0; i < 256; i++)
+			{
+				data.rgbquad[i].rgbRed = i;
+				data.rgbquad[i].rgbGreen = i;
+				data.rgbquad[i].rgbBlue = i;
+				data.rgbquad[i].rgbReserved = 0;
+
+			}
+
+			BYTE * newData = new BYTE[data.width * data.height];
+			point = 0;
+			for (int i = 0; i < data.height; i++)
+			{
+				for (int j = 0; j < data.width; j++)
+				{
+					newData[point++] = rgba[i * data.width + j].r * 0.299 + rgba[i * data.width + j].g * 0.587 + rgba[i * data.width + j].b * 0.114;
+				}
+			}
+
+			delete[] data.pImg;
+			data.pImg = newData;
+			break;
+		}
+		case 32:
+		{
+			int point = 0;
+			for (int i = 0; i < data.height; i++)
+			{
+				for (int j = 0; j < data.width; j++)
+				{
+					rgba[i * data.width + j].b = data.pImg[point++];
+					rgba[i * data.width + j].g = data.pImg[point++];
+					rgba[i * data.width + j].r = data.pImg[point++];
+					rgba[i * data.width + j].a = data.pImg[point++];
+				}
+			}
+			data.infoHeader.biBitCount = 8;
+			data.infoHeader.biClrUsed = 256;
+
+			data.fileHeader.bfOffBits = 54 + 4 * 256;
+			int byteLine = (data.width * data.infoHeader.biBitCount / 8 + 3) / 4 * 4;
+			data.infoHeader.biSizeImage = byteLine * data.height;
+			data.fileHeader.bfSize = 54 + byteLine * data.height + 4 * 256;
+
+			for (int i = 0; i < 256; i++)
+			{
+				data.rgbquad[i].rgbRed = i;
+				data.rgbquad[i].rgbGreen = i;
+				data.rgbquad[i].rgbBlue = i;
+				data.rgbquad[i].rgbReserved = 0;
+
+			}
+
+			BYTE * newData = new BYTE[data.width * data.height];
+			point = 0;
+			for (int i = 0; i < data.height; i++)
+			{
+				for (int j = 0; j < data.width; j++)
+				{
+					newData[point++] = rgba[i * data.width + j].r * 0.299 + rgba[i * data.width + j].g * 0.587 + rgba[i * data.width + j].b * 0.114;
+				}
+			}
+
+			delete[] data.pImg;
+			data.pImg = newData;
+			break;
+		}
+            default:
+                break;
+		}
+        delete[] rgba;
+	}
+
+	return data;
+}
+```
+
+## 其他封装
+
+其实也就是一些比较常用的数学操作，目前我封装了3个，分别是对灰度值的约束函数`clamp`以及`ImageData`的加与乘操作
+
+```cpp
+int ImageUtil::clamp(const int c)
+{
+	if (c > 255)
+		return 255;
+	if (c < 0)
+		return 0;
+	return c;
+}
+
+//加
+ImageUtil::ImageData & ImageUtil::ImageData::operator+(ImageData& d0)
+{
+	for(int i = 0;i < height;i++)
+	{
+		for(int j = 0;j < width;j++)
+		{
+			pImg[i * width + j] = ImageUtil::clamp(pImg[i * width + j] + d0.pImg[i * width + j]);
+		}
+	}
+
+	return *this;
+
+}
+
+//乘
+ImageUtil::ImageData & ImageUtil::ImageData::operator*(const float k)
+{
+	for(int i =0;i < height;i++)
+	{
+		for(int j = 0;j < width;j++)
+		{
+			pImg[i * width + j] = ImageUtil::clamp(pImg[i * width + j] * k);
+		}
+	}
+
+	return *this;
+}
+```
+
+至于还有没有后续的封装就看后面的练习所总结了。
+
+## 源码
+
+https://github.com/DearSummer/DigitalImageProcessing
