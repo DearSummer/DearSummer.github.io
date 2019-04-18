@@ -132,3 +132,8 @@ service_worker:
   # set the priority of this plugin,
   # lower means it will be executed first, default is 10
   priority: 12
+  
+lazyload:
+  enable: true 
+  onlypost: false
+  loadingImg: /images/loading.gif 

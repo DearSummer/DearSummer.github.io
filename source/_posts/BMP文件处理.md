@@ -8,8 +8,9 @@ mathjax: true
 
 {% asset_img 1.jpg%}
 
-
 <!-- more -->
+
+------
 
 ## BITMAP位图
 

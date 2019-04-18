@@ -11,6 +11,8 @@ Effective CPP Chapter 1
 
 <!-- more -->
 
+------
+
 > Use Const Whenever Possible
 >
 > ​										----- effective cpp
