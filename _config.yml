@@ -83,7 +83,7 @@ githubEmojis:
 # Extensions
 ## Plugins: https://hexo.io/plugins/
 ## Themes: https://hexo.io/themes/
-theme: NextOrigin
+theme: next # NextOrigin
 # theme: landscape
 
 search:
@@ -136,4 +136,4 @@ service_worker:
 lazyload:
   enable: true 
   onlypost: false
-  loadingImg: /images/loading.gif 
+  loadingImg: #/images/loading.gif 
