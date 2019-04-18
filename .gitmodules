@@ -1,0 +1,3 @@
+[submodule "themes/nextOrigin"]
+	path = themes/nextOrigin
+	url = git@github.com:DearSummer/hexo-theme-next.git
