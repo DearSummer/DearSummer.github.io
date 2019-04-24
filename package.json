@@ -22,6 +22,7 @@
     "hexo-renderer-kramed": "^0.1.4",
     "hexo-renderer-stylus": "^0.3.3",
     "hexo-server": "^0.3.3",
-    "hexo-service-worker": "^1.0.1"
+    "hexo-service-worker": "^1.0.1",
+    "hexo-wordcount": "^6.0.1"
   }
 }
