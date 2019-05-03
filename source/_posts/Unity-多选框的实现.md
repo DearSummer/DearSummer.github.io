@@ -1,8 +1,9 @@
 ---
 title: Unity 多选框的实现
-date: 2019-04-24 17:29:47
 tags:
-- Unity
+  - Unity
+abbrlink: 13ed8ac0
+date: 2019-04-24 17:29:47
 ---
 
 {% asset_img d.png %}

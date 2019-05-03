@@ -1,8 +1,9 @@
 ---
 title: Use const whenever possible
-date: 2019-04-03 20:40:34
 tags:
-- c++
+  - c++
+abbrlink: 80c2e52
+date: 2019-04-03 20:40:34
 ---
 
 {% asset_img cpp.jpg  %}

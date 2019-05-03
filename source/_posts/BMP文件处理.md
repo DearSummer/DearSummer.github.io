@@ -1,9 +1,10 @@
 ---
 title: Exercise1--BMP文件处理
-date: 2019-03-20 20:37:15
 tags:
-- 图像处理
+  - 图像处理
 mathjax: true
+abbrlink: f3fe5f17
+date: 2019-03-20 20:37:15
 ---
 
 {% asset_img 1.jpg%}
