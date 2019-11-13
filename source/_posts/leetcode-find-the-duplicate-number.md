@@ -1,7 +1,7 @@
 ---
 title: 'leetcode:find the duplicate number'
 tags:
-  - code
+  - algorithm
 abbrlink: a02b6857
 date: 2019-10-29 23:26:48
 ---
@@ -32,6 +32,8 @@ Output: 3
 2.You must use only constant, O(1) extra space.
 3.Your runtime complexity should be less than O(n^2).
 4.There is only one duplicate number in the array, but it could be repeated more than once.
+
+# 解法 1，二分查找
 
 ## 解题思路
 
@@ -91,7 +93,48 @@ Output: 3
 
 最重要的，还是要开放思维，不要被乱序的数组所局限到。
 
+# 解法二 循环链表
 
+## 解题思路
+
+其实这个方法算是一个比较巧妙的方法。
+
+还是从题目出发，n+1长的数组当中包含1-n的数字。那么，我们是不是可以将这个数组看作是一个循环链表？
+
+比如`nums[0] = 1`指的是，下一项为`num[1]`，那么，数字必然小于n的数组是不可能越界的。而必有重复项则说明，这个链表是比成环的。那么，不就能够将这个问题简化为，寻找循环链表的循环处的问题了呢？
+
+相比二分查找的**O(nlogn)**的时间复杂度，这样的时间复杂度显然更低**O(n)**,而且，即使是使用了额外空间，使用hashmap来解决这个题目的问题，时间复杂度也不会变得更低。
+
+```cpp
+int findDuplicate(vector<int>& nums) 
+{
+	//使用快慢指针寻找环的位置
+        int fast = 0,slow = 0;          
+        fast = nums[nums[fast]];
+        slow = nums[slow];
+        while(nums[fast] != nums[slow])
+        {
+            fast = nums[nums[fast]];
+            slow = nums[slow];
+        }
+        
+	//改为两个慢指针寻找交汇点
+        slow = 0;
+        while(nums[fast] != nums[slow])
+        {
+            fast = nums[fast];
+            slow = nums[slow];
+        }
+        
+        return nums[slow];
+    }
+```
+
+## 思考
+
+所以说，这个题目限定了数字大小的区间真的太好了。能够用很多奇怪的方法实现这个问题。
+
+顺便一提，这个方法在leetcode中叫做弗洛伊德的兔子和乌龟
 
 **题目来源**
 

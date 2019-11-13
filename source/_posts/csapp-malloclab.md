@@ -70,12 +70,14 @@ struct block
 {
 	unsigned int header;
 	union{
-		struct internal{
+		struct pointer{
 			unsigned int * next;
 			unsigned int * prev;
 		}
-		char payload[N];
-		char extend[M];
+		struct alloc{	
+			char payload[N];
+			char extend[M];
+		}
 	};
 	unsigned int footer;
 } 
