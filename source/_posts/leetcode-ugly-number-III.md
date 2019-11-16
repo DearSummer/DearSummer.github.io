@@ -2,6 +2,7 @@
 title: 'leetcode:ugly number III'
 tags:
   - leetcode
+abbrlink: d658950c
 date: 2019-11-16 11:55:30
 ---
 
