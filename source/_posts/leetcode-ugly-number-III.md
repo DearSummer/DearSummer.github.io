@@ -1,6 +1,7 @@
 ---
 title: 'leetcode:ugly number III'
 tags:
+  - algorithm
   - leetcode
 abbrlink: d658950c
 date: 2019-11-16 11:55:30

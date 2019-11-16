@@ -2,6 +2,7 @@
 title: 'leetcode:find the duplicate number'
 tags:
   - algorithm
+  - leetcode
 abbrlink: a02b6857
 date: 2019-10-29 23:26:48
 ---

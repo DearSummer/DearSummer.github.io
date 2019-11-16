@@ -2,6 +2,7 @@
 title: 'leetcode:populating next rightpointersin each node II'
 tags:
   - algorithm
+  - leetcode
 abbrlink: a88ed812
 date: 2019-11-01 15:04:00
 ---
