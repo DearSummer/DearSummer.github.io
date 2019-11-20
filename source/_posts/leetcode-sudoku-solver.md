@@ -1,8 +1,9 @@
 ---
 title: 'leetcode:sudoku solver'
-date: 2019-11-18 21:41:17
 tags:
- - leetcode
+  - leetcode
+abbrlink: b6eeaa30
+date: 2019-11-18 21:41:17
 ---
 
 Write a program to solve a Sudoku puzzle by filling the empty cells.
