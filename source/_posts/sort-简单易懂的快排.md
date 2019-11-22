@@ -2,6 +2,7 @@
 title: 'sort:简单易懂的快排'
 tags:
   - algorithm
+  - sort
 photos: >-
   https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1574400278624&di=c806ee53e33960d9c290adca308a8040&imgtype=0&src=http%3A%2F%2Fb-ssl.duitang.com%2Fuploads%2Fitem%2F201812%2F02%2F20181202185808_sxcuy.thumb.700_0.jpg
 abbrlink: 1a46f86c

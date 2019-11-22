@@ -2,6 +2,7 @@
 title: 'sort:冒泡排序不得不说的秘密?'
 tags:
   - algorithm
+  - sort
 photos: 
   https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1574348320955&di=321b2b3f4851e51e96490420e594720d&imgtype=0&src=http%3A%2F%2Fhbimg.b0.upaiyun.com%2F51e15d8fb5f68065873bd4bbbd7f20314c8b85e1565f5-SjdKM0_fw658
 abbrlink: b446b6c0
