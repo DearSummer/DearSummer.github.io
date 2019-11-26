@@ -179,12 +179,6 @@ public:
                 overlap[i + 1] = overlap[overlap[i + 1] - 1] + 1;
         }    
 
-        for(int i = 0;i < needle.size();i++)
-            cout << needle[i] << ",";
-        cout << endl;
-        for(int i = 0;i <= needle.size();i++)
-            cout << overlap[i] << ",";
-
         int j = 0;
         for(int i = 0;i < haystack.size();i++)
         {
