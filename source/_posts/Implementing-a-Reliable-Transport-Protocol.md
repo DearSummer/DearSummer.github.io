@@ -3,9 +3,10 @@ title: Implementing a Reliable Transport Protocol
 abbrlink: 6693b937
 date: 2019-11-13 22:13:23
 tags:
+ - computer network
 ---
 
-Computer Networking:A Top-Down approach chapter 3 lab
+[Computer Networking:A Top-Down approach chapter 3 lab](http://media.pearsoncmg.com/aw/aw_kurose_network_3/labs/lab5/lab5.html)
 
 <!-- more -->
 
