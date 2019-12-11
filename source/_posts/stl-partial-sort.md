@@ -3,6 +3,7 @@ title: 'stl:partial_sort'
 tags:
   - stl
   - algorithm
+  - sort
 abbrlink: b0a82fc8
 date: 2019-12-11 16:21:54
 ---

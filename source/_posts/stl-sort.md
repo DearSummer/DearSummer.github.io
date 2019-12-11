@@ -3,6 +3,7 @@ title: 'stl:sort'
 tags:
   - stl
   - algorithm
+  - sort
 abbrlink: bb1dff1a
 date: 2019-12-11 17:16:51
 ---
