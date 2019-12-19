@@ -56,59 +56,234 @@ char& String::operator[](int index)
 
 既然大致的思路都已经思考出来了，我们就考虑实现吧。
 
-## RCObject
-既然是要用到了引用计数，那么我们为这个引用计数设计一个类吧
+既然都说到写时复制,那么，我们完全可以使用之前所说的[RCPtr](https://dearsummer.github.io/posts/dbb7ef5e/#%E6%9B%B4%E5%A4%9A)去实现这个对于字符串的内存共享的功能。
+
+## StringValue
+
+立即行动，将String实现。
 
 ```cpp
-    class RCObject
+    class String
     {
-        public:
+    public:
+        String (const char *value);
 
-        void addReference();
-        void removeReference();
-        void markUnshareable();
+        const char& operator[](int index) const;
+        char& operator[](int index);
 
-        bool isShareable() const;
-        bool isShared() const;
+    private:
 
-        protected:
+        struct StringValue: public RCObject
+        {
+            char* data;
 
-        RCObject();
-        RCObject(const RCObject& rhs);
-        RCObject& operator=(const RCObject& rhs);
-        virtual ~RCObject() = 0;
+            StringValue(const char *initValue);
+            StringValue(const StringValue& rhs);
+            void init(const char *initValue);
+            ~StringValue();
+        };
 
-        private:
+        
 
-        int refCount;
-        bool shareable;
-
+        RCPtr<StringValue> value;
     };
 ```
 
-由于要引用计数，refCount是必不可少的，同时为了记录这块内存是不是可共享的，我们也需要shareable来记录
+其中里面的StringValue就是用来缓存字符串的，而在外部使用了`RCPtr<StringValue>`确保了对字符串的内容的正确的缓存
 
 ```cpp
-    RCObject::RCObject()
-        :refCount(0),shareable(true)
-    {}
 
-    RCObject::RCObject(const RCObject& rhs)
-        :refCount(0),shareable(true)
-    {}
-
-    RCObject& RCObject::operator=(const RCObject& rhs)
+  void String::StringValue::init(const char* initValue)
     {
+        data = new char[strlen(initValue) + 1];
+        strcpy(data,initValue);
+    }
+
+    String::StringValue::StringValue(const char* initValue)
+    {
+        init(initValue);
+    }
+
+    String::StringValue::StringValue(const StringValue& rhs)
+    {
+        init(rhs.data);
+    }
+
+    String::StringValue::~StringValue()
+    {
+        delete[] data;
+    }
+```
+
+当需要新的字符串类型的时候会生成新的`StringValue`，假如对于字符串的修改没有任何问题的话，那么，就会增加引用计数。不过，这里有一个问题，我们和`RCPtr`里面的设计是一样的，假设`const char& operator[](int i) const`为不改变字符串的方式而`char& operator[](int i)`为改变字符串的方式。但实际上，我们对于调用哪一个函数并不取决于是否会发生改变，而仅仅是因为类型匹配而已，假如发生了这种事情。
+```cpp
+String s = "hello";
+std::cout << s[0] << std::endl;
+s[1] = 'y';
+```
+我们可以认为，第三行的操作会影响到字符串而第二行的操作却没有。但是，我们调用的很可能是同一个`operator[]`，因为，这个并不取决于是否发生了改变。因此，我们需要一种方式去更加的准确的预测是否会引起字符串的改变的操作。
+
+## CharProxy
+我们需要一个代理类。代理类的作用其实只是为我们争取到时间，争取到我们确切的操作字符的时候我们才确认我们的操作到底是应该怎么去做。
+
+```cpp
+	struct CharProxy
+        {
+            CharProxy(String& s,int index);
+            
+            CharProxy& operator=(const CharProxy& ths);
+            CharProxy& operator=(char c);
+
+            operator char() const;
+
+            char* operator&();
+            const char *operator&() const;
+
+        private:
+            String& str;
+            int charIndex;
+
+            void makeCopy();
+        };
+```
+
+首先，我们`String`返回的`operator[]`变成了`CharProxy`。那么，外界持有这个代理类的时候，当使用了赋值操作的时候，那么，就会触发`operator=`的操作，那么自然而然就会触发写时复制。而假如仅仅是使用这个字符，那么，自然就会隐式转换到char的类型,因为定义了`operator char()`方法。而这个时候就不会触发写时复制了。也就节省了以此内存拷贝的操作。
+
+同样，因为我们使用了代理类，那么我们有一些操作就会和`char`的操作不一样。为了消除这种不一致的行为，我们就将一些操作给重载了，这里重载了取地址的运算。因为，其他运算可以通过对char的隐式转换而达成。值得一提的是，因为取了地址就有了潜在的修改的可能，因此，也需要进行写时复制。
+
+```cpp
+    class String
+    {
+    public:
+        String (const char *value);
+       
+        struct CharProxy
+        {
+            CharProxy(String& s,int index);
+            
+            CharProxy& operator=(const CharProxy& ths);
+            CharProxy& operator=(char c);
+
+            operator char() const;
+
+            char* operator&();
+            const char *operator&() const;
+
+        private:
+            String& str;
+            int charIndex;
+
+            void makeCopy();
+        };
+
+        const String::CharProxy operator[](int index) const;
+        String::CharProxy operator[](int index);
+
+        friend std::ostream& operator<<(std::ostream& os,const String& str);
+
+        friend class CharProxy;
+    private:
+
+        struct StringValue: public RCObject
+        {
+            char* data;
+
+            StringValue(const char *initValue);
+            StringValue(const StringValue& rhs);
+            void init(const char *initValue);
+            ~StringValue();
+        };
+
+        
+
+        RCPtr<StringValue> value;
+    };
+
+    String::String(const char *initValue = "")
+        :value(new StringValue(initValue)){}
+
+    const String::CharProxy String::operator[](int index) const
+    {
+        return String::CharProxy(const_cast<String&>(*this),index);
+    }
+
+    String::CharProxy String::operator[](int index)
+    {
+        return String::CharProxy(*this,index);
+    }
+
+    String::CharProxy::CharProxy(String& s,int index)
+        :str(s),charIndex(index){}
+    
+    String::CharProxy::operator char() const
+    {
+        return str.value->data[charIndex];
+    }
+
+    std::ostream& operator<<(std::ostream& os,const String& str)
+    {
+        os << str.value->data;
+        return os;
+    }
+
+    const char *String::CharProxy::operator&() const
+    {
+        return &(str.value->data[charIndex]);
+    }
+
+    char * String::CharProxy::operator&()
+    {
+        makeCopy();
+        str.value->markUnshareable();
+
+        return &(str.value->data[charIndex]);
+    }
+
+    String::CharProxy& String::CharProxy::operator=(const String::CharProxy& rhs)
+    {
+        makeCopy();
+        str.value->data[charIndex] = rhs.str.value->data[rhs.charIndex];
         return *this;
     }
 
-    RCObject::~RCObject(){}
+    String::CharProxy& String::CharProxy::operator=(char c)
+    {
+        makeCopy();
+        str.value->data[charIndex] = c;
+        return *this;
+    }
 
-    void RCObject::addReference(){++refCount;}
-    void RCObject::removeReference(){if(--refCount == 0) delete this;}
-    void RCObject::markUnshareable(){shareable = false;}
+    void String::CharProxy::makeCopy()
+    {
+        if(str.value->isShared())
+        {
+            RCPtr<StringValue> rcptr(new StringValue(str.value->data));
+            str.value = rcptr;
+        }
+    }
 
-    bool RCObject::isShareable() const { return shareable;}
-    bool RCObject::isShared() const {return refCount > 1;}
+    void String::StringValue::init(const char* initValue)
+    {
+        data = new char[strlen(initValue) + 1];
+        strcpy(data,initValue);
+    }
+
+    String::StringValue::StringValue(const char* initValue)
+    {
+        init(initValue);
+    }
+
+    String::StringValue::StringValue(const StringValue& rhs)
+    {
+        init(rhs.data);
+    }
+
+    String::StringValue::~StringValue()
+    {
+        delete[] data;
+    }
 ```
 
+使用代理类可以延缓我们的操作，直到真正在使用它的时候才进行操作。这符合了`lazy evaluation`的优化守则，因此，对于引用多而修改少的时刻会比较有优势。
+
+> 参考书籍《more effective c++》 这是里面的String的实现方式
