@@ -28,7 +28,7 @@ Write a function to compute the next state (after one update) of the board given
 - In this question, we represent the board using a 2D array. In principle, the board is infinite, which would cause problems when the active area encroaches the border of the array. How would you address these problems?
 
 
-生命游戏，这也是一个很有意思的游戏，在经过大量的迭代之后，里面的生命就会展现出各种各样有趣的形状出来
+生命游戏，这也是一个很有意思的游戏，在经过大量的迭代之后，里面的生命就会展现出各种各样有趣的形状出来，在数学上，这个规则所对应的参数属于一种叫做“混沌的边界”的状态，多一个和少一个都不能实现这样的效果。另外，这个游戏是图灵完备的，也就是说计算机能够做的事情，这个游戏都能实现。
 
 回到问题本身，生命游戏本身的算法很简单，就是对每一个细胞都进行遍历，查找其邻居存活细胞的数量，然后，根据数量和当前细胞的状态(存活/死亡)来确定下一代这个细胞的状态(存活/死亡/复活)。由于进入下一世代是在一瞬间的，因此，在每一次更新世代的时候，都要小心的保存现场，使其不要被已经确认状态的细胞所影响。
 
