@@ -18,7 +18,7 @@ branches:
     - hexocode
 
 before_install:
-  - git config --global user.name "DearSummer"
+  - git config --global user.name "ShinyGX"
   - git config --global user.email "591243801@qq.com"
   - npm install -g hexo-cli
   - sed -i 's/git@github.com:/https:\/\/github.com\//' .gitmodules
@@ -34,7 +34,7 @@ script:
   - hexo generate
  
 after_script:
-  - git config user.name "DearSummer"
+  - git config user.name "ShinyGX"
   - git config user.email "591243801@qq.com"
   - sed -i "s/gh_token/${GH_TOKEN}/g" ./_config.yml
   - hexo deploy
