@@ -1,8 +1,8 @@
 ---
 title: 实现一个@property
+tags: - Python
+abbrlink: b151bc1
 date: 2021-01-03 18:36:19
-tags: 
-    -Python
 ---
 
 {% asset_img property.png property %}
