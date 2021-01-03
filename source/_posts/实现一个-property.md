@@ -5,7 +5,7 @@ tags:
     -Python
 ---
 
-{% asset_img property.bmp property %}
+{% asset_img property.png property %}
 
 <!-- more -->
 
